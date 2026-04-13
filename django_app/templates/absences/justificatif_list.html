@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Justificatifs{% endblock %}
+{% block page_title %}Gestion des Justificatifs{% endblock %}
+
+{% block content %}
+<div class="card p-3 mb-3">
+    <div class="d-flex gap-2">
+        <a href="?statut=" class="btn btn-sm {% if not statut %}btn-primary{% else %}btn-outline-primary{% endif %}">Tous</a>
+        <a href="?statut=EN_ATTENTE" class="btn btn-sm {% if statut == 'EN_ATTENTE' %}btn-warning{% else %}btn-outline-warning{% endif %}">En attente</a>
+        <a href="?statut=ACCEPTE" class="btn btn-sm {% if statut == 'ACCEPTE' %}btn-success{% else %}btn-outline-success{% endif %}">Acceptés</a>
+        <a href="?statut=REFUSE" class="btn btn-sm {% if statut == 'REFUSE' %}btn-danger{% else %}btn-outline-danger{% endif %}">Refusés</a>
+    </div>
+</div>
+
+<div class="card p-3">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Étudiant</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Document</th>
+                    <th>Date soumission</th>
+                    <th>Statut</th>
+                    <th>Traité par</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for j in justificatifs %}
+                <tr>
+                    <td>{{ j.id_justificatif }}</td>
+                    <td>
+                        <strong>{{ j.id_absence.id_etudiant.nom }} {{ j.id_absence.id_etudiant.prenom }}</strong>
+                        <br><small class="text-muted">{{ j.id_absence.id_etudiant.cne }}</small>
+                    </td>
+                    <td><span class="badge bg-info">{{ j.type_justificatif }}</span></td>
+                    <td>{{ j.description|truncatechars:40 }}</td>
+                    <td>
+                        {% if j.fichier_path %}
+                        <a href="/media/{{ j.fichier_path }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Voir le document">
+                            <i class="bi bi-file-earmark-arrow-down"></i>
+                        </a>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ j.date_soumission }}</td>
+                    <td>
+                        {% if j.statut == 'EN_ATTENTE' %}<span class="badge bg-warning text-dark">En attente</span>
+                        {% elif j.statut == 'ACCEPTE' %}<span class="badge bg-success">Accepté</span>
+                        {% else %}<span class="badge bg-danger">Refusé</span>{% endif %}
+                    </td>
+                    <td>{{ j.traite_par|default:"-" }}</td>
+                    <td>
+                        {% if is_admin %}
+                        <a href="{% url 'justificatif_traiter' j.pk %}" class="btn btn-sm {% if j.statut == 'EN_ATTENTE' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                            <i class="bi bi-{% if j.statut == 'EN_ATTENTE' %}check-circle{% else %}eye{% endif %}"></i>
+                            {% if j.statut == 'EN_ATTENTE' %}Traiter{% else %}Voir{% endif %}
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted">Aucun justificatif</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if justificatifs.has_other_pages %}
+    <nav><ul class="pagination pagination-sm justify-content-center">
+        {% if justificatifs.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ justificatifs.previous_page_number }}&statut={{ statut }}">Préc.</a></li>{% endif %}
+        <li class="page-item disabled"><a class="page-link">{{ justificatifs.number }}/{{ justificatifs.paginator.num_pages }}</a></li>
+        {% if justificatifs.has_next %}<li class="page-item"><a class="page-link" href="?page={{ justificatifs.next_page_number }}&statut={{ statut }}">Suiv.</a></li>{% endif %}
+    </ul></nav>
+    {% endif %}
+</div>
+{% endblock %}

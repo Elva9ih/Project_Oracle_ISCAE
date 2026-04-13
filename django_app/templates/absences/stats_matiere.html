@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Stats par matière{% endblock %}
+{% block page_title %}Statistiques par Matière (Vue Matérialisée){% endblock %}
+
+{% block content %}
+<div class="card p-3">
+    <div class="alert alert-info small mb-3">
+        <i class="bi bi-info-circle"></i> Ces données proviennent de la <strong>vue matérialisée MV_STATS_PAR_MATIERE</strong> d'Oracle.
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr><th>Code</th><th>Matière</th><th>Type</th><th>Filière</th><th>Séances</th><th>Total absences</th><th>Moy. absences/séance</th></tr>
+            </thead>
+            <tbody>
+                {% for s in stats %}
+                <tr>
+                    <td><strong>{{ s.CODE_MATIERE }}</strong></td>
+                    <td>{{ s.NOM_MATIERE }}</td>
+                    <td><span class="badge bg-info">{{ s.TYPE_MATIERE }}</span></td>
+                    <td>{{ s.NOM_FILIERE }}</td>
+                    <td>{{ s.NB_SEANCES }}</td>
+                    <td><span class="badge bg-primary">{{ s.TOTAL_ABSENCES }}</span></td>
+                    <td>{{ s.MOYENNE_ABSENCES_PAR_SEANCE }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted">Aucune donnée</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

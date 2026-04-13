@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-3">
+                    {% for field in form %}
+                    <div class="{% if field.field.widget.input_type == 'checkbox' or field.field.widget.attrs.rows %}col-12{% else %}col-md-6{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="form-label fw-semibold small">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                        {% endif %}
+                        {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+                    <a href="javascript:history.back()" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add Bootstrap classes to form inputs
+    $('form input[type="text"], form input[type="email"], form input[type="password"], form input[type="number"], form input[type="date"], form input[type="tel"], form input[type="url"]').addClass('form-control');
+    $('form select').addClass('form-select');
+    $('form textarea').addClass('form-control');
+    $('form input[type="file"]').addClass('form-control');
+    $('form input[type="checkbox"]').addClass('form-check-input');
+    // Re-init select2 on new selects
+    $('form select').not('[multiple]').select2({
+        theme: 'bootstrap-5',
+        allowClear: true,
+        placeholder: '-- Rechercher --',
+        width: '100%'
+    });
+});
+</script>
+{% endblock %}

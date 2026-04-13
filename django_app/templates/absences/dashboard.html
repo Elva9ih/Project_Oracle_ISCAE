@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Tableau de bord{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card card-kpi blue p-3">
+            <div class="text-muted small">Étudiants actifs</div>
+            <div class="kpi-value text-primary">{{ kpi.NB_ETUDIANTS_ACTIFS|default:"0" }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-kpi orange p-3">
+            <div class="text-muted small">Total absences</div>
+            <div class="kpi-value" style="color:#e65100;">{{ kpi.TOTAL_ABSENCES|default:"0" }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-kpi red p-3">
+            <div class="text-muted small">Non justifiées</div>
+            <div class="kpi-value text-danger">{{ kpi.ABSENCES_NON_JUSTIFIEES|default:"0" }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-kpi green p-3">
+            <div class="text-muted small">Justificatifs en attente</div>
+            <div class="kpi-value text-success">{{ kpi.JUSTIFICATIFS_EN_ATTENTE|default:"0" }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small">Étudiants exclus</div>
+            <div class="kpi-value text-danger">{{ kpi.NB_ETUDIANTS_EXCLUS|default:"0" }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small">Enseignants</div>
+            <div class="kpi-value text-info">{{ kpi.NB_ENSEIGNANTS|default:"0" }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small">Séances effectuées</div>
+            <div class="kpi-value text-secondary">{{ kpi.NB_SEANCES_EFFECTUEES|default:"0" }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small">Absences justifiées</div>
+            <div class="kpi-value text-success">{{ kpi.ABSENCES_JUSTIFIEES|default:"0" }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+    <div class="col-md-8">
+        <div class="card p-3">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-graph-up"></i> Évolution mensuelle des absences</h6>
+            <canvas id="chartEvolution" height="100"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-bar-chart"></i> Absences par groupe (Top 10)</h6>
+            <canvas id="chartGroupes" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Table stats par groupe -->
+<div class="card p-3">
+    <h6 class="fw-semibold mb-3"><i class="bi bi-table"></i> Statistiques par groupe</h6>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>Groupe</th>
+                    <th>Filière</th>
+                    <th>Étudiants</th>
+                    <th>Total absences</th>
+                    <th>Non justifiées</th>
+                    <th>Justifiées</th>
+                    <th>Moyenne/étudiant</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in stats_groupe %}
+                <tr>
+                    <td><strong>{{ s.CODE_GROUPE }}</strong></td>
+                    <td>{{ s.NOM_FILIERE }}</td>
+                    <td>{{ s.NB_ETUDIANTS }}</td>
+                    <td><span class="badge bg-primary">{{ s.TOTAL_ABSENCES }}</span></td>
+                    <td><span class="badge badge-non-justifiee">{{ s.ABSENCES_NON_JUSTIFIEES }}</span></td>
+                    <td><span class="badge badge-justifiee">{{ s.ABSENCES_JUSTIFIEES }}</span></td>
+                    <td>{{ s.MOYENNE_ABSENCES_PAR_ETUDIANT }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted">Aucune donnée disponible</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Évolution mensuelle
+const ctxEvo = document.getElementById('chartEvolution').getContext('2d');
+new Chart(ctxEvo, {
+    type: 'line',
+    data: {
+        labels: {{ evolution_labels|safe }},
+        datasets: [
+            { label: 'Total', data: {{ evolution_total|safe }}, borderColor: '#1A7A3A', backgroundColor: 'rgba(26,122,58,.1)', fill: true, tension: 0.3 },
+            { label: 'Non justifiées', data: {{ evolution_nj|safe }}, borderColor: '#c62828', borderDash: [5,5], tension: 0.3 },
+            { label: 'Justifiées', data: {{ evolution_j|safe }}, borderColor: '#4CAF50', borderDash: [5,5], tension: 0.3 }
+        ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+// Absences par groupe
+const ctxGrp = document.getElementById('chartGroupes').getContext('2d');
+new Chart(ctxGrp, {
+    type: 'bar',
+    data: {
+        labels: {{ groupe_labels|safe }},
+        datasets: [{ label: 'Absences', data: {{ groupe_absences|safe }}, backgroundColor: '#1A7A3A' }]
+    },
+    options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } } }
+});
+</script>
+{% endblock %}

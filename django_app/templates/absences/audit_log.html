@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Journal d'audit{% endblock %}
+{% block page_title %}Journal d'Audit Oracle{% endblock %}
+
+{% block content %}
+<div class="card p-3 mb-3">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label small">Table</label>
+            <select name="table" class="form-select form-select-sm">
+                <option value="">Toutes</option>
+                <option value="ABSENCES" {% if table == 'ABSENCES' %}selected{% endif %}>ABSENCES</option>
+                <option value="ETUDIANTS" {% if table == 'ETUDIANTS' %}selected{% endif %}>ETUDIANTS</option>
+                <option value="JUSTIFICATIFS" {% if table == 'JUSTIFICATIFS' %}selected{% endif %}>JUSTIFICATIFS</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">Opération</label>
+            <select name="operation" class="form-select form-select-sm">
+                <option value="">Toutes</option>
+                <option value="INSERT" {% if operation == 'INSERT' %}selected{% endif %}>INSERT</option>
+                <option value="UPDATE" {% if operation == 'UPDATE' %}selected{% endif %}>UPDATE</option>
+                <option value="DELETE" {% if operation == 'DELETE' %}selected{% endif %}>DELETE</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel"></i> Filtrer</button>
+        </div>
+    </form>
+</div>
+
+<div class="card p-3">
+    <div class="alert alert-info small mb-3">
+        <i class="bi bi-shield-check"></i> Ce journal est alimenté automatiquement par les <strong>triggers d'audit Oracle</strong>. Chaque INSERT, UPDATE et DELETE est tracé.
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover" style="font-size: 13px;">
+            <thead>
+                <tr><th>Date</th><th>Table</th><th>Opération</th><th>ID</th><th>Anciennes valeurs</th><th>Nouvelles valeurs</th><th>Utilisateur</th></tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td class="text-nowrap">{{ log.date_operation }}</td>
+                    <td><span class="badge bg-secondary">{{ log.table_name }}</span></td>
+                    <td>
+                        {% if log.operation == 'INSERT' %}<span class="badge bg-success">INSERT</span>
+                        {% elif log.operation == 'UPDATE' %}<span class="badge bg-warning text-dark">UPDATE</span>
+                        {% else %}<span class="badge bg-danger">DELETE</span>{% endif %}
+                    </td>
+                    <td>{{ log.record_id|default:"-" }}</td>
+                    <td><small>{{ log.old_values|default:"-"|truncatechars:80 }}</small></td>
+                    <td><small>{{ log.new_values|default:"-"|truncatechars:80 }}</small></td>
+                    <td>{{ log.utilisateur|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted">Aucune entrée d'audit</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if logs.has_other_pages %}
+    <nav><ul class="pagination pagination-sm justify-content-center">
+        {% if logs.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ logs.previous_page_number }}&table={{ table }}&operation={{ operation }}">Préc.</a></li>{% endif %}
+        <li class="page-item disabled"><a class="page-link">{{ logs.number }}/{{ logs.paginator.num_pages }}</a></li>
+        {% if logs.has_next %}<li class="page-item"><a class="page-link" href="?page={{ logs.next_page_number }}&table={{ table }}&operation={{ operation }}">Suiv.</a></li>{% endif %}
+    </ul></nav>
+    {% endif %}
+</div>
+{% endblock %}

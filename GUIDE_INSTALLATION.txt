@@ -1,0 +1,134 @@
+================================================================
+  PROJET ORACLE - GESTION DES ABSENCES ÉTUDIANTS
+  Guide d'Installation Complet
+  ISCAE - Master MPIAG 2025-2026
+================================================================
+
+================================================================
+  PARTIE 1 : BASE DE DONNÉES ORACLE
+================================================================
+
+ÉTAPE 1 : Ouvrir SQL Developer et se connecter en tant que SYSTEM
+
+ÉTAPE 2 : Exécuter les scripts Oracle dans cet ordre :
+   1. oracle_scripts/01_schema.sql        -> Crée le schéma, tables, contraintes, index
+   2. oracle_scripts/02_plsql_functions_procedures.sql -> Fonctions, procédures, packages PL/SQL
+   3. oracle_scripts/03_triggers.sql       -> Triggers d'audit et métier
+   4. oracle_scripts/04_views.sql          -> Vues et vues matérialisées
+   5. oracle_scripts/05_data_generation.sql -> Génère 100K+ lignes de données
+   6. oracle_scripts/06_optimization.sql   -> Tests EXPLAIN PLAN et optimisation
+   7. oracle_scripts/07_backup_export.sql  -> Configuration export/sauvegarde
+
+IMPORTANT :
+- Le mot de passe par défaut du schéma est : gestion2025
+- Si votre mot de passe SYSTEM est différent, modifiez la ligne CONNECT dans chaque script
+- Exécutez les scripts UN PAR UN dans l'ordre
+
+VÉRIFICATION :
+   SELECT COUNT(*) FROM gestion_absences.ABSENCES;
+   -- Doit retourner environ 100 000+ lignes
+
+
+================================================================
+  PARTIE 2 : APPLICATION DJANGO
+================================================================
+
+ÉTAPE 1 : Ouvrir un terminal CMD dans le dossier django_app
+
+ÉTAPE 2 : Créer un environnement virtuel Python
+   python -m venv venv
+   venv\Scripts\activate
+
+ÉTAPE 3 : Installer les dépendances
+   pip install -r requirements.txt
+
+ÉTAPE 4 : Vérifier la connexion Oracle dans gestion_absences/settings.py
+   DATABASES = {
+       'default': {
+           'ENGINE': 'django.db.backends.oracle',
+           'NAME': 'localhost:1521/XE',
+           'USER': 'gestion_absences',
+           'PASSWORD': 'gestion2025',
+       }
+   }
+
+ÉTAPE 5 : Créer les tables Django (auth, sessions)
+   python manage.py migrate --run-syncdb
+
+ÉTAPE 6 : Créer un superutilisateur
+   python manage.py createsuperuser
+   (Suivre les instructions : username, email, password)
+
+ÉTAPE 7 : Lancer le serveur
+   python manage.py runserver
+
+ÉTAPE 8 : Ouvrir le navigateur
+   http://127.0.0.1:8000/
+   Se connecter avec le superutilisateur créé à l'étape 6
+
+
+================================================================
+  STRUCTURE DU PROJET
+================================================================
+
+project_oracle/
+├── Projet_Oracle.pdf              <- Cahier des charges
+├── GUIDE_INSTALLATION.txt         <- Ce fichier
+├── oracle_scripts/
+│   ├── 01_schema.sql              <- Tables, contraintes, index
+│   ├── 02_plsql_functions_procedures.sql <- Packages PL/SQL
+│   ├── 03_triggers.sql            <- Triggers audit + métier
+│   ├── 04_views.sql               <- Vues + vues matérialisées
+│   ├── 05_data_generation.sql     <- 100K+ lignes de données
+│   ├── 06_optimization.sql        <- EXPLAIN PLAN, benchmarks
+│   └── 07_backup_export.sql       <- Data Pump, sauvegarde
+└── django_app/
+    ├── manage.py
+    ├── requirements.txt
+    ├── gestion_absences/          <- Configuration Django
+    │   ├── settings.py
+    │   ├── urls.py
+    │   └── wsgi.py
+    ├── absences/                   <- Application principale
+    │   ├── models.py              <- Modèles (managed=False)
+    │   ├── views.py               <- Vues Django
+    │   ├── urls.py                <- Routes
+    │   ├── forms.py               <- Formulaires
+    │   ├── oracle_services.py     <- Appels PL/SQL
+    │   ├── admin.py               <- Administration
+    │   └── apps.py
+    ├── templates/                  <- Templates HTML
+    │   ├── base.html
+    │   ├── registration/login.html
+    │   └── absences/              <- Pages de l'application
+    └── static/                     <- CSS, JS
+
+
+================================================================
+  FONCTIONNALITÉS
+================================================================
+
+ORACLE (75%) :
+  - 12 tables avec contraintes complètes (PK, FK, UNIQUE, CHECK, NOT NULL)
+  - 23+ index (FK, fonctionnels, recherche)
+  - 2 packages PL/SQL (PKG_ABSENCES, PKG_STATISTIQUES)
+  - 5 fonctions PL/SQL
+  - 6 procédures PL/SQL
+  - 8 triggers (5 audit + 3 métier)
+  - 5 vues + 4 vues matérialisées
+  - Transactions (COMMIT, ROLLBACK, SAVEPOINT)
+  - 100K+ lignes de données test
+  - Tests EXPLAIN PLAN et optimisation
+  - Export Data Pump
+
+DJANGO (25%) :
+  - CRUD complet (étudiants, enseignants, séances)
+  - Marquage d'absences en masse (appel procédure Oracle)
+  - Gestion des justificatifs (appel procédure Oracle)
+  - Tableau de bord avec graphiques (Chart.js + vues matérialisées)
+  - Statistiques par groupe et par matière
+  - Journal d'audit (triggers Oracle)
+  - Traitements Oracle (rafraîchir MV, clôturer semestre)
+  - Export PDF et Excel
+  - Authentification et permissions
+  - Interface Bootstrap 5 responsive

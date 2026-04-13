@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Étudiants{% endblock %}
+{% block page_title %}Gestion des Étudiants{% endblock %}
+
+{% block content %}
+<div class="card p-3 mb-3">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label small">Recherche</label>
+            <input type="text" name="q" value="{{ query }}" class="form-control form-control-sm" placeholder="Nom, prénom ou CNE...">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">Groupe</label>
+            <select name="groupe" class="form-select form-select-sm">
+                <option value="">Tous les groupes</option>
+                {% for g in groupes %}
+                <option value="{{ g.id_groupe }}" {% if groupe_id == g.id_groupe|stringformat:"d" %}selected{% endif %}>{{ g.code_groupe }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small">Statut</label>
+            <select name="statut" class="form-select form-select-sm">
+                <option value="">Tous</option>
+                <option value="ACTIF" {% if statut == 'ACTIF' %}selected{% endif %}>Actif</option>
+                <option value="EXCLU" {% if statut == 'EXCLU' %}selected{% endif %}>Exclu</option>
+                <option value="SUSPENDU" {% if statut == 'SUSPENDU' %}selected{% endif %}>Suspendu</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-search"></i> Filtrer</button>
+        </div>
+        <div class="col-md-2">
+            <a href="{% url 'etudiant_create' %}" class="btn btn-success btn-sm w-100"><i class="bi bi-plus-lg"></i> Ajouter</a>
+        </div>
+    </form>
+</div>
+
+<div class="card p-3">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>CNE</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Groupe</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in etudiants %}
+                <tr>
+                    <td><strong>{{ e.cne }}</strong></td>
+                    <td>{{ e.nom }}</td>
+                    <td>{{ e.prenom }}</td>
+                    <td>{{ e.id_groupe.code_groupe }}</td>
+                    <td>
+                        {% if e.statut == 'ACTIF' %}<span class="badge bg-success">Actif</span>
+                        {% elif e.statut == 'EXCLU' %}<span class="badge bg-danger">Exclu</span>
+                        {% elif e.statut == 'SUSPENDU' %}<span class="badge bg-warning">Suspendu</span>
+                        {% else %}<span class="badge bg-info">{{ e.statut }}</span>{% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'etudiant_detail' e.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                        <a href="{% url 'etudiant_update' e.pk %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                        <a href="{% url 'etudiant_delete' e.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted">Aucun étudiant trouvé</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if etudiants.has_other_pages %}
+    <nav>
+        <ul class="pagination pagination-sm justify-content-center">
+            {% if etudiants.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ etudiants.previous_page_number }}&q={{ query }}&groupe={{ groupe_id }}&statut={{ statut }}">Précédent</a></li>
+            {% endif %}
+            <li class="page-item disabled"><a class="page-link">Page {{ etudiants.number }} / {{ etudiants.paginator.num_pages }}</a></li>
+            {% if etudiants.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ etudiants.next_page_number }}&q={{ query }}&groupe={{ groupe_id }}&statut={{ statut }}">Suivant</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

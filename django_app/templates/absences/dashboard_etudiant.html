@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Mon espace étudiant{% endblock %}
+{% block page_title %}Mon espace étudiant{% endblock %}
+
+{% block content %}
+{% if not etudiant %}
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle"></i> Votre compte n'est pas encore lié à un dossier étudiant. Contactez l'administrateur.
+</div>
+{% else %}
+
+<!-- Info étudiant -->
+<div class="card p-3 mb-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="fw-semibold mb-1"><i class="bi bi-person-circle"></i> {{ etudiant.prenom }} {{ etudiant.nom }}</h6>
+            <span class="text-muted">CNE: {{ etudiant.cne }} | Groupe: {{ etudiant.id_groupe.code_groupe }}</span>
+        </div>
+        <span class="badge {% if etudiant.statut == 'ACTIF' %}bg-success{% elif etudiant.statut == 'EXCLU' %}bg-danger{% else %}bg-warning{% endif %}" style="font-size: 14px;">
+            {{ etudiant.statut }}
+        </span>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card card-kpi blue p-3">
+            <div class="text-muted small">Total absences</div>
+            <div class="kpi-value text-primary">{{ nb_absences }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-kpi red p-3">
+            <div class="text-muted small">Non justifiées</div>
+            <div class="kpi-value text-danger">{{ nb_non_just }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-kpi orange p-3">
+            <div class="text-muted small">Taux d'absence</div>
+            <div class="kpi-value" style="color:#e65100;">{{ taux }}%</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small">Statut Oracle</div>
+            <div class="mt-1">
+                {% if 'NORMAL' in statut_abs %}<span class="badge bg-success">{{ statut_abs }}</span>
+                {% elif 'AVERTISSEMENT' in statut_abs %}<span class="badge bg-warning text-dark">{{ statut_abs }}</span>
+                {% else %}<span class="badge bg-danger">{{ statut_abs }}</span>{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notifications -->
+{% if notifications %}
+<div class="card p-3 mb-3">
+    <h6 class="fw-semibold"><i class="bi bi-bell"></i> Notifications</h6>
+    {% for n in notifications %}
+    <div class="alert alert-{% if n.type_notification == 'EXCLUSION' %}danger{% elif n.type_notification == 'AVERTISSEMENT' %}warning{% else %}info{% endif %} py-2 small mb-1">
+        <strong>{{ n.type_notification }}</strong> - {{ n.message }}
+        <span class="text-muted float-end">{{ n.date_creation }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Dernières absences -->
+<div class="card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-clipboard-x"></i> Mes dernières absences</h6>
+        <a href="{% url 'absence_list' %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+    </div>
+    <table class="table table-sm table-hover">
+        <thead><tr><th>Date</th><th>Matière</th><th>Horaire</th><th>Justifiée</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for a in absences %}
+            <tr>
+                <td>{{ a.date_absence }}</td>
+                <td>{{ a.id_seance.id_matiere.nom_matiere }}</td>
+                <td>{{ a.id_seance.heure_debut }} - {{ a.id_seance.heure_fin }}</td>
+                <td>
+                    {% if a.est_justifiee == 1 %}<span class="badge badge-justifiee">Oui</span>
+                    {% else %}<span class="badge badge-non-justifiee">Non</span>{% endif %}
+                </td>
+                <td>
+                    {% if a.est_justifiee == 0 %}
+                    <a href="{% url 'justificatif_create' a.id_absence %}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-plus"></i> Justifier</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-muted text-center">Aucune absence</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

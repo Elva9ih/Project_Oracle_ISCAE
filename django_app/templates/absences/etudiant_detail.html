@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}{{ etudiant.nom }} {{ etudiant.prenom }}{% endblock %}
+{% block page_title %}Détail de l'étudiant{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card p-3">
+            <h6 class="fw-semibold"><i class="bi bi-person-circle"></i> Informations</h6>
+            <hr>
+            <p><strong>CNE:</strong> {{ etudiant.cne }}</p>
+            <p><strong>Nom:</strong> {{ etudiant.nom }} {{ etudiant.prenom }}</p>
+            <p><strong>Date de naissance:</strong> {{ etudiant.date_naissance }}</p>
+            <p><strong>Email:</strong> {{ etudiant.email|default:"-" }}</p>
+            <p><strong>Téléphone:</strong> {{ etudiant.telephone|default:"-" }}</p>
+            <p><strong>Groupe:</strong> {{ etudiant.id_groupe.code_groupe }}</p>
+            <p><strong>Statut:</strong>
+                {% if etudiant.statut == 'ACTIF' %}<span class="badge bg-success">Actif</span>
+                {% elif etudiant.statut == 'EXCLU' %}<span class="badge bg-danger">Exclu</span>
+                {% else %}<span class="badge bg-warning">{{ etudiant.statut }}</span>{% endif %}
+            </p>
+            <div class="d-flex gap-2 mt-3">
+                <a href="{% url 'etudiant_update' etudiant.pk %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier</a>
+                <a href="{% url 'etudiant_list' %}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <!-- Stats Oracle -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card card-kpi blue p-3">
+                    <div class="text-muted small">Total absences</div>
+                    <div class="kpi-value text-primary">{{ nb_absences }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-kpi red p-3">
+                    <div class="text-muted small">Non justifiées</div>
+                    <div class="kpi-value text-danger">{{ nb_non_just }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-kpi orange p-3">
+                    <div class="text-muted small">Taux d'absence</div>
+                    <div class="kpi-value" style="color:#e65100;">{{ taux }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-3 mb-3">
+            <div class="alert {% if 'NORMAL' in statut_abs %}alert-success{% elif 'ATTENTION' in statut_abs %}alert-warning{% else %}alert-danger{% endif %} mb-0">
+                <i class="bi bi-info-circle"></i> <strong>Statut absences (Oracle):</strong> {{ statut_abs }}
+            </div>
+        </div>
+
+        <!-- Dernières absences -->
+        <div class="card p-3 mb-3">
+            <h6 class="fw-semibold"><i class="bi bi-clipboard-x"></i> Dernières absences</h6>
+            <table class="table table-sm table-hover">
+                <thead><tr><th>Date</th><th>Matière</th><th>Horaire</th><th>Justifiée</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for a in absences %}
+                    <tr>
+                        <td>{{ a.date_absence }}</td>
+                        <td>{{ a.id_seance.id_matiere.nom_matiere }}</td>
+                        <td>{{ a.id_seance.heure_debut }} - {{ a.id_seance.heure_fin }}</td>
+                        <td>
+                            {% if a.est_justifiee == 1 %}<span class="badge badge-justifiee">Oui</span>
+                            {% else %}<span class="badge badge-non-justifiee">Non</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if a.est_justifiee == 0 %}
+                            <a href="{% url 'justificatif_create' a.id_absence %}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-plus"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted text-center">Aucune absence</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Notifications -->
+        {% if notifications %}
+        <div class="card p-3">
+            <h6 class="fw-semibold"><i class="bi bi-bell"></i> Notifications</h6>
+            {% for n in notifications %}
+            <div class="alert alert-{% if n.type_notification == 'EXCLUSION' %}danger{% elif n.type_notification == 'AVERTISSEMENT' %}warning{% else %}info{% endif %} py-2 small">
+                <strong>{{ n.type_notification }}</strong> - {{ n.message }}
+                <span class="text-muted float-end">{{ n.date_creation }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

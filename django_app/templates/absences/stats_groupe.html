@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Stats par groupe{% endblock %}
+{% block page_title %}Statistiques par Groupe (Vue Matérialisée){% endblock %}
+
+{% block content %}
+<div class="card p-3">
+    <div class="alert alert-info small mb-3">
+        <i class="bi bi-info-circle"></i> Ces données proviennent de la <strong>vue matérialisée MV_STATS_PAR_GROUPE</strong> d'Oracle, optimisée pour les performances.
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr><th>Groupe</th><th>Filière</th><th>Étudiants</th><th>Total absences</th><th>Non justifiées</th><th>Justifiées</th><th>Moyenne/étudiant</th></tr>
+            </thead>
+            <tbody>
+                {% for s in stats %}
+                <tr>
+                    <td><strong>{{ s.CODE_GROUPE }}</strong></td>
+                    <td>{{ s.NOM_FILIERE }}</td>
+                    <td>{{ s.NB_ETUDIANTS }}</td>
+                    <td><span class="badge bg-primary">{{ s.TOTAL_ABSENCES }}</span></td>
+                    <td><span class="badge badge-non-justifiee">{{ s.ABSENCES_NON_JUSTIFIEES }}</span></td>
+                    <td><span class="badge badge-justifiee">{{ s.ABSENCES_JUSTIFIEES }}</span></td>
+                    <td>{{ s.MOYENNE_ABSENCES_PAR_ETUDIANT }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted">Aucune donnée. Rafraîchissez les vues matérialisées.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

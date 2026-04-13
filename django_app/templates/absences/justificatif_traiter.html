@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Traiter le justificatif #{{ justificatif.id_justificatif }}{% endblock %}
+{% block page_title %}Traiter le justificatif #{{ justificatif.id_justificatif }}{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Left: Justificatif details -->
+    <div class="col-md-7">
+        <div class="card p-4 mb-3">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-person-circle"></i> Informations de l'étudiant</h6>
+            <div class="row g-2">
+                <div class="col-md-4"><span class="text-muted small">CNE</span><br><strong>{{ etudiant.cne }}</strong></div>
+                <div class="col-md-4"><span class="text-muted small">Nom complet</span><br><strong>{{ etudiant.nom }} {{ etudiant.prenom }}</strong></div>
+                <div class="col-md-4"><span class="text-muted small">Groupe</span><br><strong>{{ etudiant.id_groupe.code_groupe }}</strong></div>
+            </div>
+        </div>
+
+        <div class="card p-4 mb-3">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-clipboard-x"></i> Détails de l'absence</h6>
+            <div class="row g-2">
+                <div class="col-md-4"><span class="text-muted small">Matière</span><br><strong>{{ seance.id_matiere.nom_matiere }}</strong></div>
+                <div class="col-md-4"><span class="text-muted small">Date</span><br><strong>{{ seance.date_seance }}</strong></div>
+                <div class="col-md-4"><span class="text-muted small">Horaire</span><br><strong>{{ seance.heure_debut }} - {{ seance.heure_fin }}</strong></div>
+            </div>
+        </div>
+
+        <div class="card p-4 mb-3">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-file-earmark-text"></i> Justificatif soumis</h6>
+            <div class="row g-2 mb-3">
+                <div class="col-md-4">
+                    <span class="text-muted small">Type</span><br>
+                    <span class="badge bg-info">{{ justificatif.type_justificatif }}</span>
+                </div>
+                <div class="col-md-4">
+                    <span class="text-muted small">Date de soumission</span><br>
+                    <strong>{{ justificatif.date_soumission }}</strong>
+                </div>
+                <div class="col-md-4">
+                    <span class="text-muted small">Statut actuel</span><br>
+                    {% if justificatif.statut == 'EN_ATTENTE' %}<span class="badge bg-warning text-dark">En attente</span>
+                    {% elif justificatif.statut == 'ACCEPTE' %}<span class="badge bg-success">Accepté</span>
+                    {% else %}<span class="badge bg-danger">Refusé</span>{% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-muted small">Description</span>
+                <div class="border rounded p-3 bg-light mt-1">{{ justificatif.description|default:"Aucune description" }}</div>
+            </div>
+
+            {% if justificatif.fichier_path %}
+            <div class="mb-2">
+                <span class="text-muted small">Document joint</span>
+                <div class="mt-1">
+                    <a href="/media/{{ justificatif.fichier_path }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Voir / Télécharger le document
+                    </a>
+                    <span class="text-muted small ms-2">{{ justificatif.fichier_path }}</span>
+                </div>
+            </div>
+
+            {% if justificatif.fichier_path|slice:"-4:" == ".pdf" or justificatif.fichier_path|slice:"-4:" == ".PDF" %}
+            <div class="mt-3">
+                <iframe src="/media/{{ justificatif.fichier_path }}" width="100%" height="400" style="border: 1px solid #ddd; border-radius: 8px;"></iframe>
+            </div>
+            {% elif justificatif.fichier_path|slice:"-4:" == ".png" or justificatif.fichier_path|slice:"-4:" == ".jpg" or justificatif.fichier_path|slice:"-5:" == ".jpeg" %}
+            <div class="mt-3">
+                <img src="/media/{{ justificatif.fichier_path }}" class="img-fluid rounded border" style="max-height: 400px;" alt="Document justificatif">
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="alert alert-secondary mb-0">
+                <i class="bi bi-info-circle"></i> Aucun document joint à ce justificatif.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right: Decision form -->
+    <div class="col-md-5">
+        <div class="card p-4 sticky-top" style="top: 20px;">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-check-circle"></i> Prendre une décision</h6>
+
+            {% if justificatif.statut == 'EN_ATTENTE' %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Décision</label>
+                    {{ form.statut }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Commentaire (optionnel)</label>
+                    {{ form.commentaire }}
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Valider la décision</button>
+                    <a href="{% url 'justificatif_list' %}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Retour</a>
+                </div>
+            </form>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Ce justificatif a déjà été traité.
+            </div>
+            {% if justificatif.traite_par %}
+            <p class="small"><strong>Traité par:</strong> {{ justificatif.traite_par }}</p>
+            {% endif %}
+            {% if justificatif.date_traitement %}
+            <p class="small"><strong>Date:</strong> {{ justificatif.date_traitement }}</p>
+            {% endif %}
+            {% if justificatif.commentaire %}
+            <p class="small"><strong>Commentaire:</strong> {{ justificatif.commentaire }}</p>
+            {% endif %}
+            <a href="{% url 'justificatif_list' %}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

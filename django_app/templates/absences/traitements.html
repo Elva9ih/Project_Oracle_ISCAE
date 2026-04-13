@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Traitements Oracle{% endblock %}
+{% block page_title %}Traitements Oracle (Procédures PL/SQL){% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h6 class="fw-semibold"><i class="bi bi-arrow-repeat"></i> Rafraîchir les vues matérialisées</h6>
+            <p class="text-muted small">Appelle la procédure <code>REFRESH_ALL_MV</code> pour mettre à jour toutes les vues matérialisées (tableaux de bord, statistiques).</p>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="refresh_mv">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-arrow-clockwise"></i> Rafraîchir
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h6 class="fw-semibold"><i class="bi bi-lock"></i> Clôturer un semestre</h6>
+            <p class="text-muted small">Appelle la procédure <code>PKG_ABSENCES.CLOTURER_SEMESTRE</code> pour marquer toutes les séances comme effectuées et rejeter les justificatifs en attente.</p>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="cloturer">
+                <div class="mb-3">
+                    <select name="semestre" class="form-select" required>
+                        <option value="">-- Choisir un semestre --</option>
+                        {% for s in semestres %}
+                        <option value="{{ s.id_semestre }}">{{ s.nom_semestre }} ({{ s.annee_universitaire }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-lock-fill"></i> Clôturer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 mt-3">
+    <h6 class="fw-semibold"><i class="bi bi-info-circle"></i> Architecture Oracle du projet</h6>
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <h6 class="text-primary">Packages PL/SQL</h6>
+            <ul class="small">
+                <li><code>PKG_ABSENCES</code> - Gestion des absences</li>
+                <li><code>PKG_STATISTIQUES</code> - Rapports et stats</li>
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h6 class="text-primary">Fonctions Oracle</h6>
+            <ul class="small">
+                <li><code>GET_NB_ABSENCES()</code></li>
+                <li><code>GET_NB_ABSENCES_NON_JUSTIFIEES()</code></li>
+                <li><code>GET_TAUX_ABSENCE()</code></li>
+                <li><code>EST_EN_DEPASSEMENT()</code></li>
+                <li><code>GET_STATUT_ETUDIANT_ABSENCES()</code></li>
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h6 class="text-primary">Procédures Oracle</h6>
+            <ul class="small">
+                <li><code>MARQUER_ABSENCE()</code></li>
+                <li><code>MARQUER_ABSENCES_BULK()</code></li>
+                <li><code>JUSTIFIER_ABSENCE()</code></li>
+                <li><code>TRAITER_JUSTIFICATIF()</code></li>
+                <li><code>CLOTURER_SEMESTRE()</code></li>
+                <li><code>REFRESH_ALL_MV()</code></li>
+            </ul>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <h6 class="text-primary">Triggers d'audit</h6>
+            <ul class="small">
+                <li><code>TRG_AUDIT_ABSENCES</code></li>
+                <li><code>TRG_AUDIT_ETUDIANTS</code></li>
+                <li><code>TRG_AUDIT_JUSTIFICATIFS</code></li>
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h6 class="text-primary">Triggers métier</h6>
+            <ul class="small">
+                <li><code>TRG_ABSENCE_DATE_AUTO</code></li>
+                <li><code>TRG_PROTECT_ABSENCE_JUSTIFIEE</code></li>
+                <li><code>TRG_CHECK_ETUDIANT_ACTIF</code></li>
+                <li><code>TRG_NOTIF_CHANGEMENT_STATUT</code></li>
+                <li><code>TRG_SEANCE_EFFECTUEE</code></li>
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h6 class="text-primary">Vues matérialisées</h6>
+            <ul class="small">
+                <li><code>MV_STATS_PAR_GROUPE</code></li>
+                <li><code>MV_STATS_PAR_MATIERE</code></li>
+                <li><code>MV_EVOLUTION_MENSUELLE</code></li>
+                <li><code>MV_KPI_GLOBAL</code></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

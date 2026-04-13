@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Gestion des utilisateurs{% endblock %}
+{% block page_title %}Gestion des Utilisateurs{% endblock %}
+
+{% block content %}
+<div class="card p-3 mb-3">
+    <div class="d-flex justify-content-between">
+        <div>
+            <span class="badge bg-danger me-1">ADMIN</span>
+            <span class="badge bg-primary me-1">ENSEIGNANT</span>
+            <span class="badge bg-success">ETUDIANT</span>
+        </div>
+        <a href="{% url 'user_create' %}" class="btn btn-success btn-sm"><i class="bi bi-plus-lg"></i> Créer un utilisateur</a>
+    </div>
+</div>
+
+<div class="card p-3">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr><th>Username</th><th>Nom complet</th><th>Email</th><th>Rôle</th><th>Lié à</th><th>Actif</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td><strong>{{ u.username }}</strong></td>
+                    <td>{{ u.first_name }} {{ u.last_name }}</td>
+                    <td>{{ u.email|default:"-" }}</td>
+                    <td>
+                        {% if u.profile.role == 'ADMIN' %}<span class="badge bg-danger">Admin</span>
+                        {% elif u.profile.role == 'ENSEIGNANT' %}<span class="badge bg-primary">Enseignant</span>
+                        {% elif u.profile.role == 'ETUDIANT' %}<span class="badge bg-success">Étudiant</span>
+                        {% else %}<span class="badge bg-secondary">{{ u.profile.role|default:"N/A" }}</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if u.profile.id_enseignant %}{{ u.profile.id_enseignant }}
+                        {% elif u.profile.id_etudiant %}{{ u.profile.id_etudiant }}
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>{% if u.is_active %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</td>
+                    <td>
+                        {% if u != request.user %}
+                        <a href="{% url 'user_delete' u.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted">Aucun utilisateur</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

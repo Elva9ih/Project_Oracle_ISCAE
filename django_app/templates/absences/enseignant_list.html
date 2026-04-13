@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Enseignants{% endblock %}
+{% block page_title %}Gestion des Enseignants{% endblock %}
+
+{% block content %}
+<div class="card p-3 mb-3">
+    <div class="d-flex justify-content-end">
+        <a href="{% url 'enseignant_create' %}" class="btn btn-success btn-sm"><i class="bi bi-plus-lg"></i> Ajouter un enseignant</a>
+    </div>
+</div>
+
+<div class="card p-3">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>Email</th><th>Spécialité</th><th>Grade</th><th>Statut</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for e in enseignants %}
+                <tr>
+                    <td><strong>{{ e.matricule }}</strong></td>
+                    <td>{{ e.nom }}</td>
+                    <td>{{ e.prenom }}</td>
+                    <td>{{ e.email|default:"-" }}</td>
+                    <td>{{ e.specialite|default:"-" }}</td>
+                    <td>{{ e.grade|default:"-" }}</td>
+                    <td><span class="badge {% if e.statut == 'ACTIF' %}bg-success{% else %}bg-secondary{% endif %}">{{ e.statut }}</span></td>
+                    <td><a href="{% url 'enseignant_update' e.pk %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted">Aucun enseignant</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if enseignants.has_other_pages %}
+    <nav><ul class="pagination pagination-sm justify-content-center">
+        {% if enseignants.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ enseignants.previous_page_number }}">Préc.</a></li>{% endif %}
+        <li class="page-item disabled"><a class="page-link">{{ enseignants.number }}/{{ enseignants.paginator.num_pages }}</a></li>
+        {% if enseignants.has_next %}<li class="page-item"><a class="page-link" href="?page={{ enseignants.next_page_number }}">Suiv.</a></li>{% endif %}
+    </ul></nav>
+    {% endif %}
+</div>
+{% endblock %}

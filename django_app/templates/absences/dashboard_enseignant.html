@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Tableau de bord Enseignant{% endblock %}
+{% block page_title %}Tableau de bord Enseignant{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-12">
+        <div class="card p-3">
+            <h6 class="fw-semibold">
+                <i class="bi bi-person-badge"></i>
+                Bienvenue, {% if enseignant %}{{ enseignant.prenom }} {{ enseignant.nom }}{% else %}{{ request.user.username }}{% endif %}
+            </h6>
+            {% if enseignant %}
+            <p class="text-muted mb-0">Spécialité: {{ enseignant.specialite|default:"-" }} | Grade: {{ enseignant.grade|default:"-" }} | Matricule: {{ enseignant.matricule }}</p>
+            {% else %}
+            <div class="alert alert-warning mt-2 mb-0">
+                <i class="bi bi-exclamation-triangle"></i> Votre compte n'est pas encore lié à un enseignant. Contactez l'administrateur.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-semibold mb-0"><i class="bi bi-calendar3"></i> Mes dernières séances</h6>
+                <a href="{% url 'seance_list' %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+            </div>
+            <table class="table table-sm table-hover">
+                <thead><tr><th>Date</th><th>Matière</th><th>Groupe</th><th>Horaire</th><th>Statut</th></tr></thead>
+                <tbody>
+                    {% for s in seances %}
+                    <tr>
+                        <td>{{ s.date_seance }}</td>
+                        <td>{{ s.id_matiere.nom_matiere }}</td>
+                        <td>{{ s.id_groupe.code_groupe }}</td>
+                        <td>{{ s.heure_debut }}-{{ s.heure_fin }}</td>
+                        <td>
+                            {% if s.statut == 'EFFECTUEE' %}<span class="badge bg-success">Effectuée</span>
+                            {% elif s.statut == 'ANNULEE' %}<span class="badge bg-danger">Annulée</span>
+                            {% else %}<span class="badge bg-warning">Planifiée</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted text-center">Aucune séance</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6 class="fw-semibold"><i class="bi bi-lightning"></i> Actions rapides</h6>
+            <div class="d-grid gap-2 mt-3">
+                <a href="{% url 'marquer_absences' %}" class="btn btn-danger"><i class="bi bi-clipboard-plus"></i> Marquer des absences</a>
+                <a href="{% url 'absence_list' %}" class="btn btn-outline-primary"><i class="bi bi-clipboard-x"></i> Voir les absences</a>
+                <a href="{% url 'etudiant_list' %}" class="btn btn-outline-secondary"><i class="bi bi-people"></i> Liste des étudiants</a>
+                <a href="{% url 'stats_groupe' %}" class="btn btn-outline-info"><i class="bi bi-bar-chart"></i> Statistiques</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

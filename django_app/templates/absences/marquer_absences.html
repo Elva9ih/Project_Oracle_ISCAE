@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Marquer des absences{% endblock %}
+{% block page_title %}Marquer des absences{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <!-- Étape 1: Sélection du groupe -->
+        <div class="card p-3 mb-3">
+            <h6 class="fw-semibold"><i class="bi bi-1-circle"></i> Sélectionner un groupe</h6>
+            <form method="get" class="d-flex gap-2">
+                <select name="groupe" class="form-select" required>
+                    <option value="">-- Choisir un groupe --</option>
+                    {% for g in groupes %}
+                    <option value="{{ g.id_groupe }}" {% if groupe_id == g.id_groupe|stringformat:"d" %}selected{% endif %}>{{ g.code_groupe }} - {{ g.nom_groupe }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-arrow-right"></i></button>
+            </form>
+        </div>
+
+        {% if form %}
+        <!-- Étape 2: Marquer les absences -->
+        <div class="card p-3">
+            <h6 class="fw-semibold"><i class="bi bi-2-circle"></i> Sélectionner la séance et les étudiants absents</h6>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="groupe" value="{{ groupe_id }}">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Séance</label>
+                    {{ form.seance }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Motif (optionnel)</label>
+                    {{ form.motif }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Étudiants absents</label>
+                    <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                        <div class="mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleAll(true)">Tout cocher</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleAll(false)">Tout décocher</button>
+                        </div>
+                        {{ form.etudiants }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-danger"><i class="bi bi-clipboard-x"></i> Enregistrer les absences</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleAll(checked) {
+    document.querySelectorAll('input[name="etudiants"]').forEach(cb => cb.checked = checked);
+}
+</script>
+{% endblock %}
